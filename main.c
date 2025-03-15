@@ -4,6 +4,10 @@
 
 #define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_messagebox.h>
+
+// internal files
+#include "shader.h"
 // clang-format on
 
 #define WINDOW_TITLE "SimpleGrid"
@@ -12,9 +16,26 @@
 #define CALLBACK __attribute__((unused))
 
 typedef struct {
+    struct {
+        Shader shader;
+    } scene;
     SDL_Window* window;
     SDL_GLContext glcontext;
 } AppState;
+
+bool SceneLoad(AppState* state) {
+    if (!ShaderLoad(&state->scene.shader,
+                    "assets/debug/grid.vert",
+                    "assets/debug/grid.frag")) {
+        return false;
+    }
+
+    return true;
+}
+
+void SceneUnload(AppState* state) {
+    ShaderUnload(&state->scene.shader);
+}
 
 CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     (void)argc;
@@ -76,6 +97,13 @@ CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     state->window = window;
     state->glcontext = glcontext;
     *appstate = state;
+
+    if (!SceneLoad(state)) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error",
+                                 "Failed to load, check the logs", window);
+        return SDL_APP_FAILURE;
+    }
+
     return SDL_APP_CONTINUE;
 }
 
@@ -113,6 +141,7 @@ CALLBACK void SDL_AppQuit(void* appstate, SDL_AppResult result) {
         SDL_Log("Application quit with error: %d", result);
     }
 
+    SceneUnload(state);
     if (state->window != NULL) {
         SDL_GL_DestroyContext(state->glcontext);
         SDL_DestroyWindow(state->window);

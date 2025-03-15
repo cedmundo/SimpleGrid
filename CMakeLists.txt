@@ -12,5 +12,5 @@ add_subdirectory(vendor)
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
 
 add_executable(SimpleGrid)
-target_sources(SimpleGrid PRIVATE main.c)
+target_sources(SimpleGrid PRIVATE shader.c main.c)
 target_link_libraries(SimpleGrid PRIVATE glad SDL3::SDL3 cglm)
