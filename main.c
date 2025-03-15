@@ -4,45 +4,48 @@
 
 #define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL_main.h>
+#include <stdlib.h>
 // clang-format on
 
 #define WINDOW_TITLE "SimpleGrid"
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
+#define CALLBACK __attribute__((unused))
 
 typedef struct {
-    SDL_Window *window;
+    SDL_Window* window;
     SDL_GLContext glcontext;
 } AppState;
 
-SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
-    (void) argc;
-    (void) argv;
+CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
+    (void)argc;
+    (void)argv;
 
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
         return SDL_APP_FAILURE;
     }
 
-    AppState *state = SDL_malloc(sizeof(AppState));
+    AppState* state = SDL_malloc(sizeof(AppState));
     SDL_zero(*state);
 
     // Init window
-    Uint32 window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
-    SDL_Window *window = SDL_CreateWindow(WINDOW_TITLE,
-                                     WINDOW_WIDTH,
-                                     WINDOW_HEIGHT,
-                                     window_flags);
+    Uint32 window_flags =
+        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
+    SDL_Window* window = SDL_CreateWindow(WINDOW_TITLE, WINDOW_WIDTH,
+                                          WINDOW_HEIGHT, window_flags);
     if (window == NULL) {
         SDL_Log("Could not create window: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
     // Configure window
-    SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+    SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED,
+                          SDL_WINDOWPOS_CENTERED);
 
     // Set GL attributes
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
+                        SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 
@@ -58,7 +61,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     }
 
     // Dynamically link GLAD procedures using SDL get proc address
-    if (!gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress)) {
+    if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
         SDL_Log("Failed to initialize GLAD");
         return SDL_APP_FAILURE;
     }
@@ -77,8 +80,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv) {
     return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult SDL_AppIterate(void *appstate) {
-    AppState *state = (AppState *) appstate;
+CALLBACK SDL_AppResult SDL_AppIterate(void* appstate) {
+    AppState* state = (AppState*)appstate;
     glClearColor(0.1f, 0.1f, 0.1f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -90,8 +93,9 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
-    AppState *state = (AppState *) appstate;
+CALLBACK SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
+    // AppState* state = (AppState*)appstate;
+    (void)appstate;
     switch (event->type) {
         case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
             return SDL_APP_SUCCESS;
@@ -104,8 +108,12 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
     return SDL_APP_CONTINUE;
 }
 
-void SDL_AppQuit(void *appstate, SDL_AppResult result) {
-    AppState *state = (AppState *) appstate;
+CALLBACK void SDL_AppQuit(void* appstate, SDL_AppResult result) {
+    AppState* state = (AppState*)appstate;
+    if (result != SDL_APP_SUCCESS) {
+        SDL_Log("Application quit with error: %d", result);
+    }
+
     if (state->window != NULL) {
         SDL_GL_DestroyContext(state->glcontext);
         SDL_DestroyWindow(state->window);
