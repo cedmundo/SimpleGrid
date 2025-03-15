@@ -21,6 +21,8 @@ typedef struct {
     } scene;
     SDL_Window* window;
     SDL_GLContext glcontext;
+    Uint64 last_tick;
+    float delta_time;
 } AppState;
 
 bool SceneLoad(AppState* state) {
@@ -47,6 +49,11 @@ CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
 
     AppState* state = SDL_malloc(sizeof(AppState));
     SDL_zero(*state);
+
+    // Set hints
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+    SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
+    SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "60");
 
     // Init window
     Uint32 window_flags =
@@ -96,6 +103,8 @@ CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
 
     state->window = window;
     state->glcontext = glcontext;
+    state->last_tick = SDL_GetTicks();
+    state->delta_time = 0.0f;
     *appstate = state;
 
     if (!SceneLoad(state)) {
@@ -109,6 +118,11 @@ CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
 
 CALLBACK SDL_AppResult SDL_AppIterate(void* appstate) {
     AppState* state = (AppState*)appstate;
+
+    Uint64 current_tick = SDL_GetTicks();
+    state->delta_time = (float)(current_tick - state->last_tick) / SDL_MS_PER_SECOND;
+    state->last_tick = current_tick;
+
     glClearColor(0.1f, 0.1f, 0.1f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT);
 
