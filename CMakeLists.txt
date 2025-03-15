@@ -13,4 +13,4 @@ find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
 
 add_executable(SimpleGrid)
 target_sources(SimpleGrid PRIVATE main.c)
-target_link_libraries(SimpleGrid PRIVATE glad SDL3::SDL3)
+target_link_libraries(SimpleGrid PRIVATE glad SDL3::SDL3 cglm)

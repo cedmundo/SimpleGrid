@@ -4,7 +4,6 @@
 
 #define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL_main.h>
-#include <stdlib.h>
 // clang-format on
 
 #define WINDOW_TITLE "SimpleGrid"
