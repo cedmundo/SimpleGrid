@@ -117,8 +117,18 @@ terminate:
     return success;
 }
 
-void ShaderUse(const Shader *shader) {
+void ShaderUse(const Shader *shader, Camera *camera) {
     glUseProgram(shader->program_id);
+
+    mat4 view = {0};
+    mat4 proj = {0};
+    TransformView(&camera->transform, view);
+    glm_mat4_copy(camera->projection, proj);
+
+    glUniformMatrix4fv(glGetUniformLocation(shader->program_id, "proj"),
+                       1, GL_FALSE, (const GLfloat *)proj);
+    glUniformMatrix4fv(glGetUniformLocation(shader->program_id, "view"),
+                       1, GL_FALSE, (const GLfloat *)view);
 }
 
 void ShaderUnload(Shader *shader) {
