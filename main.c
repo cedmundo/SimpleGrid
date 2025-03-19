@@ -7,17 +7,22 @@
 #include <SDL3/SDL_messagebox.h>
 
 // internal files
-#include "shader.h"
+#include "camera.h"
+#include "debug_grid.h"
 // clang-format on
 
 #define WINDOW_TITLE "SimpleGrid"
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
-#define CALLBACK __attribute__((unused))
+#define CAMERA_NEAR 0.01f
+#define CAMERA_FAR 1000.0f
+#define CAMERA_FOV 80.0f
+#define APP_CALLBACK __attribute__((unused))
 
 typedef struct {
     struct {
-        Shader shader;
+        DebugGrid grid;
+        Camera camera;
     } scene;
     SDL_Window* window;
     SDL_GLContext glcontext;
@@ -26,20 +31,30 @@ typedef struct {
 } AppState;
 
 bool SceneLoad(AppState* state) {
-    if (!ShaderLoad(&state->scene.shader,
-                    "assets/debug/grid.vert",
-                    "assets/debug/grid.frag")) {
+    if (!DebugGridLoad(&state->scene.grid)) {
         return false;
     }
+
+    CameraMakePerspective(&state->scene.camera, CAMERA_FOV,
+                          (float)WINDOW_WIDTH / WINDOW_HEIGHT,
+                          CAMERA_NEAR, CAMERA_FAR);
 
     return true;
 }
 
-void SceneUnload(AppState* state) {
-    ShaderUnload(&state->scene.shader);
+void SceneUpdate(AppState* state) {
+    CameraUpdate(&state->scene.camera, state->delta_time);
 }
 
-CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
+void SceneDraw(AppState *state) {
+    DebugGridDraw(&state->scene.grid, &state->scene.camera);
+}
+
+void SceneUnload(AppState* state) {
+    DebugGridUnload(&state->scene.grid);
+}
+
+APP_CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     (void)argc;
     (void)argv;
 
@@ -51,9 +66,9 @@ CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     SDL_zero(*state);
 
     // Set hints
-    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
-    SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
-    SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "60");
+    // SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+    // SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
+    // SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "60");
 
     // Init window
     Uint32 window_flags =
@@ -103,7 +118,7 @@ CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
 
     state->window = window;
     state->glcontext = glcontext;
-    state->last_tick = SDL_GetTicks();
+    state->last_tick = SDL_GetPerformanceCounter();
     state->delta_time = 0.0f;
     *appstate = state;
 
@@ -116,15 +131,19 @@ CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     return SDL_APP_CONTINUE;
 }
 
-CALLBACK SDL_AppResult SDL_AppIterate(void* appstate) {
+APP_CALLBACK SDL_AppResult SDL_AppIterate(void* appstate) {
     AppState* state = (AppState*)appstate;
 
-    Uint64 current_tick = SDL_GetTicks();
-    state->delta_time = (float)(current_tick - state->last_tick) / SDL_MS_PER_SECOND;
+    Uint64 current_tick = SDL_GetPerformanceCounter();
+    state->delta_time = (float) (current_tick - state->last_tick) / (float) SDL_GetPerformanceFrequency();
     state->last_tick = current_tick;
 
     glClearColor(0.1f, 0.1f, 0.1f, 1.f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    SceneUpdate(state);
+    // TODO(cedmundo): Maybe fix framerate on draw?
+    SceneDraw(state);
 
     if (!SDL_GL_SwapWindow(state->window)) {
         SDL_Log("Failed to swap window: %s\n", SDL_GetError());
@@ -134,14 +153,16 @@ CALLBACK SDL_AppResult SDL_AppIterate(void* appstate) {
     return SDL_APP_CONTINUE;
 }
 
-CALLBACK SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
-    // AppState* state = (AppState*)appstate;
-    (void)appstate;
+APP_CALLBACK SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
+    AppState* state = (AppState*)appstate;
     switch (event->type) {
         case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
             return SDL_APP_SUCCESS;
         case SDL_EVENT_WINDOW_RESIZED:
             glViewport(0, 0, event->window.data1, event->window.data2);
+            CameraMakePerspective(&state->scene.camera, CAMERA_FOV,
+                                  (float)event->window.data1 / (float)event->window.data2,
+                                  CAMERA_NEAR, CAMERA_FAR);
             break;
         default:
             break;
@@ -149,7 +170,7 @@ CALLBACK SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
     return SDL_APP_CONTINUE;
 }
 
-CALLBACK void SDL_AppQuit(void* appstate, SDL_AppResult result) {
+APP_CALLBACK void SDL_AppQuit(void* appstate, SDL_AppResult result) {
     AppState* state = (AppState*)appstate;
     if (result != SDL_APP_SUCCESS) {
         SDL_Log("Application quit with error: %d", result);
