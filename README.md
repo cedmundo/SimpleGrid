@@ -5,6 +5,8 @@ environment, camera is a simple floating implementation.
 
 Implementation taken from this [post](https://asliceofrendering.com/scene%20helper/2020/01/05/InfiniteGrid/) (thank you Marie!).
 
+![image](https://github.com/user-attachments/assets/c23eae52-2622-4c5d-991b-27e81229053c)
+
 ## Dependencies
 
 * SDL 3
