@@ -177,6 +177,12 @@ APP_CALLBACK SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
                 SDL_SetWindowRelativeMouseMode(state->window, false);
             }
             break;
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
+            if (!SDL_GetWindowRelativeMouseMode(state->window)) {
+                SDL_CaptureMouse(true);
+                SDL_SetWindowRelativeMouseMode(state->window, true);
+            }
+            break;
         default:
             break;
     }
