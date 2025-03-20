@@ -8,6 +8,7 @@
 
 // internal files
 #include "camera.h"
+#include "cube.h"
 #include "debug_grid.h"
 // clang-format on
 
@@ -22,6 +23,7 @@
 typedef struct {
     struct {
         DebugGrid grid;
+        Cube cube;
         Camera camera;
     } scene;
     SDL_Window* window;
@@ -35,23 +37,29 @@ bool SceneLoad(AppState* state) {
         return false;
     }
 
+    if (!CubeLoad(&state->scene.cube)) {
+        return false;
+    }
+
     CameraMakePerspective(&state->scene.camera, CAMERA_FOV,
                           (float)WINDOW_WIDTH / WINDOW_HEIGHT,
                           CAMERA_NEAR, CAMERA_FAR);
-
     return true;
 }
 
 void SceneUpdate(AppState* state) {
     CameraUpdate(&state->scene.camera, state->delta_time);
+    CubeUpdate(&state->scene.cube, state->delta_time);
 }
 
 void SceneDraw(AppState *state) {
-    DebugGridDraw(&state->scene.grid, &state->scene.camera);
+    // DebugGridDraw(&state->scene.grid, &state->scene.camera);
+    CubeDraw(&state->scene.cube, &state->scene.camera);
 }
 
 void SceneUnload(AppState* state) {
     DebugGridUnload(&state->scene.grid);
+    CubeUnload(&state->scene.cube);
 }
 
 APP_CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
@@ -116,6 +124,8 @@ APP_CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     SDL_ShowWindow(window);
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     state->window = window;
