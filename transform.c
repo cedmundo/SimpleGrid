@@ -14,13 +14,7 @@ void TransformIdentity(Transform *t) {
 void TransformModel(Transform *t, mat4 m) {
     glm_mat4_identity(m);
     glm_translate(m, t->position);
-
-    float angle = 0;
-    vec3 axis = {0};
-    glm_quat_axis(t->rotation, axis);
-    angle = glm_quat_angle(t->rotation);
-    glm_rotate(m, angle, axis);
-
+    glm_quat_rotate(m, t->rotation, m);
     glm_scale(m, t->scale);
 }
 
