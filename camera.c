@@ -24,7 +24,7 @@ void CameraMakePerspective(Camera *camera, float fov, float aspect, float near, 
     camera->transform.position[2] = 5.0f;
 }
 
-void CameraUpdate(Camera *camera, float dt) {
+void CameraUpdate(Camera *camera, float delta_time) {
     const bool * keyboardState = SDL_GetKeyboardState(NULL);
     vec3 direction = {0};
     vec3 input_axis = {0};
@@ -54,15 +54,15 @@ void CameraUpdate(Camera *camera, float dt) {
 
     versor yaw_rot = {0};
     versor pitch_rot = {0};
-    glm_quatv(pitch_rot, glm_rad(mouse_delta[1] * camera->angular_speed * dt), right);
-    glm_quat_mul(pitch_rot, camera->transform.rotation, camera->transform.rotation);
+    glm_quatv(pitch_rot, glm_rad(mouse_delta[1] * camera->angular_speed * delta_time), right);
+    glm_quat_mul(camera->transform.rotation, pitch_rot, camera->transform.rotation);
 
-    glm_quatv(yaw_rot, glm_rad(mouse_delta[0] * camera->angular_speed * dt), up);
-    glm_quat_mul(camera->transform.rotation, yaw_rot, camera->transform.rotation);
+    glm_quatv(yaw_rot, glm_rad(mouse_delta[0] * camera->angular_speed * delta_time), up);
+    glm_quat_mul(yaw_rot, camera->transform.rotation, camera->transform.rotation);
 
     // Move relative to camera forward
     glm_quat_rotatev(camera->transform.rotation, input_axis, direction);
     glm_vec3_normalize(direction);
-    glm_vec3_scale(direction, camera->linear_speed * dt, direction);
-    glm_vec3_add(camera->transform.position, direction, camera->transform.position);
+    glm_vec3_scale(direction, camera->linear_speed * delta_time, direction);
+    glm_vec3_add(direction, camera->transform.position, camera->transform.position);
 }

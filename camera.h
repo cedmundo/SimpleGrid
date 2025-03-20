@@ -16,7 +16,7 @@ typedef struct {
 
 void CameraMakePerspective(Camera *camera,
                            float fov, float aspect, float near, float far);
-void CameraUpdate(Camera *camera, float dt);
+void CameraUpdate(Camera *camera, float delta_time);
 
 
 #endif  // SIMPLEGRID_CAMERA_H
