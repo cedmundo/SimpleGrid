@@ -10,13 +10,13 @@
 typedef struct {
     Transform transform;
     mat4 projection;
-    float speed;
+    float linear_speed;
+    float angular_speed;
 } Camera;
 
 void CameraMakePerspective(Camera *camera,
                            float fov, float aspect, float near, float far);
 void CameraUpdate(Camera *camera, float dt);
-void CameraPassUniforms(Camera *camera);
 
 
 #endif  // SIMPLEGRID_CAMERA_H

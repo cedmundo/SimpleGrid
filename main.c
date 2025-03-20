@@ -16,7 +16,7 @@
 #define WINDOW_HEIGHT 600
 #define CAMERA_NEAR 0.01f
 #define CAMERA_FAR 1000.0f
-#define CAMERA_FOV 80.0f
+#define CAMERA_FOV 75.0f
 #define APP_CALLBACK __attribute__((unused))
 
 typedef struct {
@@ -83,6 +83,8 @@ APP_CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     // Configure window
     SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED,
                           SDL_WINDOWPOS_CENTERED);
+    SDL_CaptureMouse(true);
+    SDL_SetWindowRelativeMouseMode(window, true);
 
     // Set GL attributes
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
@@ -163,6 +165,12 @@ APP_CALLBACK SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
             CameraMakePerspective(&state->scene.camera, CAMERA_FOV,
                                   (float)event->window.data1 / (float)event->window.data2,
                                   CAMERA_NEAR, CAMERA_FAR);
+            break;
+        case SDL_EVENT_KEY_UP:
+            if (event->key.key == SDLK_ESCAPE) {
+                SDL_CaptureMouse(false);
+                SDL_SetWindowRelativeMouseMode(state->window, false);
+            }
             break;
         default:
             break;
