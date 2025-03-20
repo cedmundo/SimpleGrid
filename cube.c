@@ -84,7 +84,7 @@ void CubeUpdate(Cube *cube, float delta_time) {
     versor y_rot = {0};
     glm_quatv(x_rot, delta_time, right);
     glm_quatv(y_rot, delta_time, up);
-    glm_quat_mul(cube->transform.rotation, x_rot, cube->transform.rotation);
+    // glm_quat_mul(cube->transform.rotation, x_rot, cube->transform.rotation);
     glm_quat_mul(cube->transform.rotation, y_rot, cube->transform.rotation);
 }
 

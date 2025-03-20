@@ -1,5 +1,10 @@
 #version 330 core
 
+in vec3 nearPoint;
+in vec3 farPoint;
+out vec4 outColor;
+
 void main() {
-    gl_FragColor = vec4(0.5f, 0.2f, 0.2f, 1.0f);
+    float t = -nearPoint.y / (farPoint.y - nearPoint.y);
+    outColor = vec4(1.0, 0.0, 0.0, 1.0 * float(t > 0));
 }

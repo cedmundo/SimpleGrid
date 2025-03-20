@@ -48,18 +48,18 @@ bool SceneLoad(AppState* state) {
 }
 
 void SceneUpdate(AppState* state) {
-    CameraUpdate(&state->scene.camera, state->delta_time);
     CubeUpdate(&state->scene.cube, state->delta_time);
+    CameraUpdate(&state->scene.camera, state->delta_time);
 }
 
 void SceneDraw(AppState *state) {
-    // DebugGridDraw(&state->scene.grid, &state->scene.camera);
     CubeDraw(&state->scene.cube, &state->scene.camera);
+    DebugGridDraw(&state->scene.grid, &state->scene.camera);
 }
 
 void SceneUnload(AppState* state) {
-    DebugGridUnload(&state->scene.grid);
     CubeUnload(&state->scene.cube);
+    DebugGridUnload(&state->scene.grid);
 }
 
 APP_CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
@@ -72,11 +72,6 @@ APP_CALLBACK SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
 
     AppState* state = SDL_malloc(sizeof(AppState));
     SDL_zero(*state);
-
-    // Set hints
-    // SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
-    // SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
-    // SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "60");
 
     // Init window
     Uint32 window_flags =

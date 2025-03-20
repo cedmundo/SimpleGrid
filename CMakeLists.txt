@@ -16,6 +16,7 @@ target_sources(SimpleGrid PRIVATE
         transform.c
         camera.c
         shader.c
+        cube.c
         debug_grid.c
         main.c)
 target_link_libraries(SimpleGrid PRIVATE glad SDL3::SDL3 cglm m)
